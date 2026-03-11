@@ -592,7 +592,8 @@ function render() {
   // History grid (75 days)
   const grid = document.getElementById("historyGrid");
   grid.innerHTML = "";
-  const start = new Date(START_DATE);
+  const [sy, sm, sd] = START_DATE.split("-").map(Number);
+  const start = new Date(sy, sm - 1, sd);
   for (let i = 0; i < 75; i++) {
     const d = new Date(start);
     d.setDate(d.getDate() + i);
