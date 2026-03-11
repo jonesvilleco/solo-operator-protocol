@@ -461,7 +461,8 @@ function todayKey() {
 }
 
 function getDayNumber() {
-  const start = new Date(START_DATE);
+  const [y, m, d] = START_DATE.split("-").map(Number);
+  const start = new Date(y, m - 1, d);
   const now = new Date();
   now.setHours(0,0,0,0);
   start.setHours(0,0,0,0);
