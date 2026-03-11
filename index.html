@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SOP 75">
+<title>Solo Operator Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e0d0;
+    --muted: #555;
+    --dim: #333;
+    --orange: #e8643a;
+    --blue: #4a9eff;
+    --gold: #c8a84b;
+    --green: #7ec87e;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+    position: relative;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 36px 24px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .protocol-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: var(--orange);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .day-number {
+    font-family: 'Oswald', sans-serif;
+    font-size: 58px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  .date-str {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.12em;
+  }
+
+  .counter {
+    text-align: right;
+    padding-top: 4px;
+  }
+
+  .counter-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--dim);
+    line-height: 1;
+    transition: color 0.4s ease;
+  }
+
+  .counter-num.done { color: var(--orange); }
+
+  .counter-denom {
+    font-family: 'Oswald', sans-serif;
+    font-size: 20px;
+    color: #2a2a2a;
+  }
+
+  .counter-label {
+    font-size: 9px;
+    color: #444;
+    letter-spacing: 0.15em;
+    margin-top: 4px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-track {
+    height: 3px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange), #c84820);
+    border-radius: 2px;
+    transition: width 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .progress-fill.all-done {
+    background: linear-gradient(90deg, var(--orange), #ffaa44);
+    box-shadow: 0 0 12px rgba(232,100,58,0.6);
+  }
+
+  .complete-banner {
+    margin-top: 12px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--orange);
+    text-align: center;
+    animation: pulse 2s infinite;
+    display: none;
+  }
+
+  .complete-banner.visible { display: block; }
+
+  /* STREAK BAR */
+  .streak-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(232,100,58,0.03);
+  }
+
+  .streak-icon { font-size: 16px; }
+
+  .streak-text {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--orange);
+  }
+
+  .streak-sub {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    margin-left: auto;
+  }
+
+  /* TASKS */
+  .task-list { padding: 4px 0; }
+
+  .task-row {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .task-row:active { background: rgba(255,255,255,0.03); }
+  .task-row.checked { background: rgba(232,100,58,0.035); }
+
+  .cat-bar {
+    width: 3px;
+    height: 38px;
+    border-radius: 2px;
+    margin-right: 16px;
+    flex-shrink: 0;
+    background: #222;
+    transition: background 0.3s ease;
+  }
+
+  .task-row.checked .cat-bar { }
+
+  .check-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #2e2e2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+    background: transparent;
+  }
+
+  .check-circle svg { display: none; }
+  .task-row.checked .check-circle svg { display: block; }
+
+  .task-info { flex: 1; }
+
+  .task-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    transition: all 0.25s ease;
+  }
+
+  .task-row.checked .task-label {
+    color: #555;
+    text-decoration: line-through;
+  }
+
+  .task-cat {
+    font-size: 9px;
+    color: #3a3a3a;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .task-emoji {
+    font-size: 18px;
+    opacity: 0.7;
+    transition: opacity 0.25s;
+    flex-shrink: 0;
+  }
+
+  .task-row.checked .task-emoji { opacity: 0.3; }
+
+  /* HISTORY */
+  .section-header {
+    padding: 20px 24px 10px;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .history-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 24px 20px;
+  }
+
+  .history-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: #1a1a1a;
+    border: 1px solid #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px;
+    color: #333;
+    transition: all 0.2s ease;
+  }
+
+  .history-dot.perfect {
+    background: rgba(232,100,58,0.15);
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+
+  .history-dot.partial {
+    background: rgba(232,100,58,0.05);
+    border-color: #3a2a20;
+    color: #664433;
+  }
+
+  .history-dot.today-dot {
+    border-color: #555;
+    color: #666;
+    animation: pulse 2s infinite;
+  }
+
+  /* NOTES */
+  .notes-section { padding: 0 24px 20px; }
+
+  .notes-section textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid #1e1e1e;
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    padding: 12px 14px;
+    resize: vertical;
+    letter-spacing: 0.04em;
+    min-height: 90px;
+    transition: border-color 0.2s ease;
+  }
+
+  .notes-section textarea:focus {
+    outline: none;
+    border-color: rgba(232,100,58,0.35);
+  }
+
+  .notes-section textarea::placeholder { color: #333; }
+
+  /* RESET */
+  .reset-area {
+    padding: 16px 24px;
+    text-align: center;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid #1e1e1e;
+    color: #333;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    padding: 8px 20px;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+  }
+
+  .reset-btn:hover { border-color: #444; color: #555; }
+
+  /* FOOTER */
+  .footer {
+    padding: 16px 24px 0;
+    font-size: 8px;
+    color: #252525;
+    letter-spacing: 0.18em;
+    text-align: center;
+  }
+
+  /* ANIMATIONS */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes flashCelebrate {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .celebrate-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(232,100,58,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 50;
+    animation: flashCelebrate 2.5s forwards;
+  }
+
+  .app { animation: slideIn 0.4s ease; }
+</style>
+</head>
+<body>
+
+<div id="celebrate" class="celebrate-overlay" style="display:none;"></div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="protocol-label">Solo Operator Protocol</div>
+        <div class="day-number" id="dayNum">DAY 1</div>
+        <div class="date-str" id="dateStr"></div>
+      </div>
+      <div class="counter">
+        <div class="counter-num" id="counterNum">0<span class="counter-denom">/8</span></div>
+        <div class="counter-label">COMPLETE</div>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="complete-banner" id="completeBanner">▲ DAY COMPLETE — NO EXCUSES ▲</div>
+  </div>
+
+  <!-- STREAK -->
+  <div class="streak-bar">
+    <span class="streak-icon">🔥</span>
+    <span class="streak-text" id="streakText">0 DAY STREAK</span>
+    <span class="streak-sub" id="streakSub">START TODAY</span>
+  </div>
+
+  <!-- TASKS -->
+  <div class="task-list" id="taskList"></div>
+
+  <!-- HISTORY -->
+  <div class="section-header">// 75-Day Map</div>
+  <div class="history-grid" id="historyGrid"></div>
+
+  <!-- NOTES -->
+  <div class="section-header">// Field Notes</div>
+  <div class="notes-section">
+    <textarea id="notepad" placeholder="Challenges, insights, breakthroughs..."></textarea>
+  </div>
+
+  <!-- RESET -->
+  <div class="reset-area">
+    <button class="reset-btn" onclick="resetDay()">↺ Reset Today</button>
+  </div>
+
+  <div class="footer">75 DAYS // NO EXCUSES // NO HALF MEASURES</div>
+</div>
+
+<script>
+const TASKS = [
+  { id: 1, label: "45 Min Workout",             emoji: "⚡", cat: "body",     color: "#e8643a" },
+  { id: 2, label: "45 Min Outdoor Movement",    emoji: "🌤", cat: "body",     color: "#e8643a" },
+  { id: 3, label: "Follow Eating Plan",         emoji: "🥩", cat: "body",     color: "#e8643a" },
+  { id: 4, label: "No Cheat Meals or Alcohol",  emoji: "🚫", cat: "body",     color: "#e8643a" },
+  { id: 5, label: "2 Deep Work Blocks",         emoji: "🎯", cat: "operator", color: "#4a9eff" },
+  { id: 6, label: "Prayer / Scripture / Reflection", emoji: "✝️", cat: "spirit", color: "#c8a84b" },
+  { id: 7, label: "Read 10 Pages",              emoji: "📖", cat: "mind",     color: "#7ec87e" },
+  { id: 8, label: "Drink 1 Gallon of Water",    emoji: "💧", cat: "body",     color: "#4a9eff" },
+];
+
+const START_DATE = "2026-03-11";
+const TOTAL = TASKS.length;
+
+function todayKey() {
+  return new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+}
+
+function getDayNumber() {
+  const start = new Date(START_DATE);
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  start.setHours(0,0,0,0);
+  return Math.max(1, Math.floor((now - start) / 86400000) + 1);
+}
+
+function loadState() {
+  const key = todayKey();
+  const raw = localStorage.getItem("sop_" + key);
+  return raw ? JSON.parse(raw) : { checked: {}, note: "" };
+}
+
+function saveState(state) {
+  localStorage.setItem("sop_" + todayKey(), JSON.stringify(state));
+}
+
+function loadHistory() {
+  const raw = localStorage.getItem("sop_history");
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveHistory(history) {
+  localStorage.setItem("sop_history", JSON.stringify(history));
+}
+
+function updateHistory(checked) {
+  const history = loadHistory();
+  const count = Object.values(checked).filter(Boolean).length;
+  history[todayKey()] = count;
+  saveHistory(history);
+}
+
+function calcStreak(history) {
+  let streak = 0;
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  while (true) {
+    const key = d.toLocaleDateString("en-CA");
+    const val = history[key];
+    if (val === TOTAL) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+let state = loadState();
+let celebrateFired = false;
+
+function render() {
+  const checked = state.checked;
+  const completedCount = Object.values(checked).filter(Boolean).length;
+  const allDone = completedCount === TOTAL;
+  const pct = (completedCount / TOTAL) * 100;
+
+  // Header
+  document.getElementById("dayNum").textContent = "DAY " + getDayNumber();
+  const now = new Date();
+  document.getElementById("dateStr").textContent = now.toLocaleDateString("en-US", {
+    weekday:"long", month:"long", day:"numeric", year:"numeric"
+  }).toUpperCase();
+
+  // Counter
+  const cn = document.getElementById("counterNum");
+  cn.innerHTML = completedCount + '<span class="counter-denom">/' + TOTAL + '</span>';
+  cn.classList.toggle("done", allDone);
+
+  // Progress
+  const pf = document.getElementById("progressFill");
+  pf.style.width = pct + "%";
+  pf.classList.toggle("all-done", allDone);
+
+  // Banner
+  document.getElementById("completeBanner").classList.toggle("visible", allDone);
+
+  // Celebrate
+  if (allDone && !celebrateFired) {
+    celebrateFired = true;
+    const el = document.getElementById("celebrate");
+    el.style.display = "block";
+    setTimeout(() => { el.style.display = "none"; }, 2600);
+  }
+
+  // Streak
+  const history = loadHistory();
+  const streak = calcStreak(history);
+  document.getElementById("streakText").textContent = streak + " DAY STREAK";
+  document.getElementById("streakSub").textContent = streak > 0
+    ? (allDone ? "LOCKED IN ✓" : "DON'T BREAK IT")
+    : (allDone ? "STREAK STARTS TODAY" : "COMPLETE ALL 8");
+
+  // Tasks
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+  TASKS.forEach(task => {
+    const done = !!checked[task.id];
+    const row = document.createElement("div");
+    row.className = "task-row" + (done ? " checked" : "");
+    row.innerHTML = `
+      <div class="cat-bar" style="background:${done ? task.color : '#222'}"></div>
+      <div class="check-circle" style="${done ? `border-color:${task.color};background:${task.color};box-shadow:0 0 10px ${task.color}44` : ''}">
+        <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+          <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="task-info">
+        <div class="task-label">${task.label}</div>
+        <div class="task-cat">${task.cat}</div>
+      </div>
+      <div class="task-emoji">${task.emoji}</div>
+    `;
+    row.addEventListener("click", () => {
+      state.checked[task.id] = !state.checked[task.id];
+      saveState(state);
+      updateHistory(state.checked);
+      render();
+    });
+    list.appendChild(row);
+  });
+
+  // Notepad
+  document.getElementById("notepad").value = state.note || "";
+
+  // History grid (75 days)
+  const grid = document.getElementById("historyGrid");
+  grid.innerHTML = "";
+  const start = new Date(START_DATE);
+  for (let i = 0; i < 75; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    const key = d.toLocaleDateString("en-CA");
+    const isToday = key === todayKey();
+    const val = history[key];
+    const dot = document.createElement("div");
+    dot.className = "history-dot" +
+      (val === TOTAL ? " perfect" : val > 0 ? " partial" : isToday ? " today-dot" : "");
+    dot.textContent = i + 1;
+    dot.title = `Day ${i+1}: ${d.toLocaleDateString("en-US",{month:"short",day:"numeric"})}` +
+      (val !== undefined ? ` — ${val}/${TOTAL}` : "");
+    grid.appendChild(dot);
+  }
+}
+
+// Notepad auto-save
+document.getElementById("notepad").addEventListener("input", (e) => {
+  state.note = e.target.value;
+  saveState(state);
+});
+
+function resetDay() {
+  if (confirm("Reset today's checklist?")) {
+    state = { checked: {}, note: "" };
+    celebrateFired = false;
+    saveState(state);
+    updateHistory(state.checked);
+    render();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
